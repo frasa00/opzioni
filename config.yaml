@@ -86,7 +86,14 @@ database:
   type: "sqlite"
   path: "data/historical/options.db"
   cleanup_days: 365
-
+# Add to config.yaml
+machine_learning:
+  enabled: true
+  model_type: "random_forest"  # or "gradient_boosting"
+  target: "next_day_direction"
+  forecast_horizon: 1
+  retrain_frequency_days: 30
+  model_storage_path: "models/"
 logging:
   level: "INFO"
   file: "logs/options_terminal.log"
