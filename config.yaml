@@ -1,0 +1,93 @@
+# Configuration file for Options Terminal
+
+data_sources:
+  primary: "yfinance"
+  backup: "cboe"
+  
+  yfinance:
+    cache_enabled: true
+    cache_duration: 60  # seconds
+    retry_attempts: 3
+  
+  cboe:
+    enabled: false
+    api_key: ""
+  
+indicators:
+  # Skew calculation
+  skew:
+    delta_levels: [0.25, 0.10]
+    lookback_days: 5
+    alert_threshold: 0.1
+  
+  # Put/Call Ratio
+  pcr:
+    methods: ["simple", "weighted", "exponential"]
+    alert_thresholds:
+      extreme_bullish: 0.7
+      extreme_bearish: 1.3
+      panic_level: 1.8
+  
+  # Gamma Exposure
+  gamma:
+    calculation_method: "approximate"
+    alert_threshold: -500000
+    flip_zone_percentage: 5
+  
+  # Max Pain
+  max_pain:
+    enabled: true
+    gravitational_threshold: 3  # percentage
+  
+  # Systemic Risk
+  systemic_risk:
+    weights:
+      skew: 0.25
+      pcr: 0.20
+      gamma: 0.15
+      vanna_charm: 0.10
+      max_pain: 0.15
+      volatility: 0.15
+    high_risk_threshold: 70
+    medium_risk_threshold: 40
+
+dashboard:
+  refresh_interval: 30  # seconds
+  theme: "dark"
+  
+  charts:
+    skew_history_days: 30
+    gamma_heatmap_bins: 20
+    volatility_surface_points: 50
+  
+alerts:
+  enabled: true
+  notification_methods: ["dashboard", "console"]
+  
+  conditions:
+    - name: "skew_extreme"
+      condition: "skew_25d > 0.15"
+      message: "Extreme skew detected - high fear in market"
+    
+    - name: "pcr_extreme"
+      condition: "pcr_weighted < 0.7 or pcr_weighted > 1.3"
+      message: "Extreme put/call ratio detected"
+    
+    - name: "gamma_flip_near"
+      condition: "abs(gamma_flip_zone - spot_price) / spot_price < 0.02"
+      message: "Approaching gamma flip zone - high volatility expected"
+    
+    - name: "systemic_risk_high"
+      condition: "systemic_risk_score > 70"
+      message: "High systemic risk detected - caution advised"
+
+database:
+  enabled: true
+  type: "sqlite"
+  path: "data/historical/options.db"
+  cleanup_days: 365
+
+logging:
+  level: "INFO"
+  file: "logs/options_terminal.log"
+  max_size_mb: 100
